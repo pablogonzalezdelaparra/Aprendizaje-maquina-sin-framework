@@ -19,7 +19,10 @@ data['Cholesterol'] = data['Cholesterol'].map({'NORMAL': 0, 'HIGH': 1})
 class Node():
     def __init__(self, best_characteristic=None, best_division_criteria=None, 
                  left_child=None, right_child=None, value=None):
-        """ Clase para representar un nodo de un arbol de decision """
+        """ Clase para representar un nodo de un arbol de decision. El nodo
+        puede ser un nodo de decision o un nodo hoja. Si el nodo es un nodo de
+        decision, tiene un valor de caracteristica y un criterio de division.
+        Si el nodo es un nodo hoja, tiene un valor de prediccion. """
         
         # Para nodos de decision
         self.best_characteristic = best_characteristic
@@ -31,7 +34,9 @@ class Node():
         self.value = value
 
 def split_data(data):
-    """ Funcion para dividir los datos en dos grupos """
+    """ Funcion para dividir los datos en dos grupos. El primer grupo contiene
+    los datos de entrada y el segundo grupo contiene los datos de salida.
+    Los datos de salida son los valores de la columna objetivo. """
 
     # Se obtienen las dimensiones de los datos de entrada
     x_rows_size, x_columns_size = np.shape(data[:, :-1])
@@ -42,7 +47,8 @@ def split_data(data):
     return x_rows_size, x_columns_size, y_values
 
 def get_mode(y_values):
-    """ Funcion para obtener la moda de los valores de un subset de datos """
+    """ Funcion para obtener la moda de los valores de un subset de datos.
+    Se utiliza la moda para predecir la clase de un conjunto de datos. """
 
     # Obtener los valores unicos y sus conteos
     unique_values, value_counts = np.unique(y_values, return_counts=True)
@@ -56,7 +62,9 @@ def get_mode(y_values):
     return mode
 
 def build_tree(data, max_depth, current_depth=0):
-    """ Funcion recursiva para construir el arbol de decision """
+    """ Funcion recursiva para construir el arbol de decision.
+    El arbol de decision se construye usando el algoritmo de encontrar
+    la mejor división al recorrer cada caracteristica y cada criterio. """
 
     # Se obtienen las dimensiones de los datos de entrada y salida
     x_rows_size, x_columns_size, y_values = split_data(data)
@@ -87,7 +95,9 @@ def build_tree(data, max_depth, current_depth=0):
     return Node(value=leaf_value)
 
 def get_division_criteria(data, column, criteria):
-    """ Función para obtener los datos de los nodos izquierdo y derecho """
+    """ Función para obtener los datos de los nodos izquierdo y derecho.
+    Los nodos izquierdo y derecho se obtienen usando un criterio de 
+    division. El criterio de division es un valor unico de una columna."""
 
     left_data = []
     right_data = []
@@ -105,7 +115,8 @@ def get_division_criteria(data, column, criteria):
     return np.array(left_data), np.array(right_data)
 
 def get_information_gain(left_data, right_data):
-    """ Función para calcular la ganancia de información """
+    """ Función para calcular la ganancia de información.
+    La ganancia de información se calcula usando el indice de Gini. """
 
     # Se obtienen los valores de la columna objetivo para cada hijo
     left_y_values= left_data
@@ -127,7 +138,8 @@ def get_information_gain(left_data, right_data):
     return information_gain
 
 def get_best_parameters(data, x_columns_size):
-    """ Función para calcular la ganancia de información """
+    """ Función para calcular la mejor division de los datos de entrada.
+    La mejor division se calcula usando la ganancia de informacion. """
 
     # Se inicializan las variables
     max_information_gain = -float("inf")
@@ -171,7 +183,8 @@ def get_best_parameters(data, x_columns_size):
         max_information_gain
 
 def get_gini_index(y_values):
-    """ Función para calcular el indice de Gini """""
+    """ Función para calcular el indice de Gini.
+    El indice de Gini se calcula usando la entropia. """
 
     # Se inicializa el indice de Gini
     gini_index = 0
@@ -189,7 +202,9 @@ def get_gini_index(y_values):
 
 ############## SECCIÓN DE EJECUCIÓN DE MODELO ##############
 def train_model(X, Y, max_depth=3):
-    """ Función para entrenar el modelo """
+    """ Función para entrenar el modelo.
+    El modelo se entrena usando el algoritmo de 
+    construir el arbol de decision. """
     
     # Se concatenan los datos de entrada y salida
     dataset = np.column_stack((X, Y))
@@ -200,7 +215,9 @@ def train_model(X, Y, max_depth=3):
     return tree
 
 def predict_value(tree, X):
-    """ Función para predecir la clase de los datos de entrada """
+    """ Función para predecir la clase de los datos de entrada.
+    La clase de los datos de entrada se predice usando el arbol 
+    de decision. """
         
     # Se inicializa la lista de predicciones
     predictions = []
