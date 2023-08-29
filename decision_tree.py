@@ -239,7 +239,7 @@ def predict_value(tree, X):
         predictions.append(temp_tree.value)
 
     return predictions
-    
+
 ############## SECCIÓN DE ENTRENAMIENTO Y PRUEBA DE MODELO ##############
 # ----- PREPARACIÓN DE DATOS -----
 # Importar librerias
@@ -250,28 +250,36 @@ characteristic_rows = data.iloc[:, :-1].values
 # Resultados esperados (Y)
 result_rows = data.iloc[:, -1].values.reshape(-1,1)
 
-# ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA -----
-# Dividir el dataset en 80% entrenamiento y 20% prueba
-X_train_full, X_test, Y_train_full, Y_test = train_test_split(
-    characteristic_rows, result_rows, test_size=0.2, random_state=36)
+for _ in range(10):
+    """ Debido a que el árbol de decisión es un algoritmo en donde no se 
+    modificar los hiperparámetros para ir mejorando el algoritmo, 
+    se ejecuta 10 veces para obtener una demostración que el algoritmo
+    generaliza con distintas divisiones de los datos de prueba y validación.
+    """
+    # ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA -----
+    # Dividir el dataset en 80% entrenamiento y 20% prueba
+    rand_numb_btw_0_and_100 = np.random.randint(0, 100)
+    X_train_full, X_test, Y_train_full, Y_test = train_test_split(
+        characteristic_rows, result_rows, test_size=0.2, random_state=rand_numb_btw_0_and_100)
+    print("Random state: ", rand_numb_btw_0_and_100)
 
-# ----- DIVISIÓN DEL 80% DE ENTRENAMIENTO EN ENTRENAMIENTO Y VALIDACIÓN -----
-# Dividir el 80% de entrenamiento en 80% entrenamiento y 20% validación
-X_train, X_val, Y_train, Y_val = train_test_split(
-    X_train_full, Y_train_full, test_size=0.2, random_state=42)
+    # ----- DIVISIÓN DEL 80% DE ENTRENAMIENTO EN ENTRENAMIENTO Y VALIDACIÓN -----
+    # Dividir el 80% de entrenamiento en 80% entrenamiento y 20% validación
+    X_train, X_val, Y_train, Y_val = train_test_split(
+        X_train_full, Y_train_full, test_size=0.2, random_state=42)
 
-# ----- ENTRENAMIENTO DEL MODELO -----
-# Entrenar el arbol de decision usando el 80% de entrenamiento
-tree = train_model(X_train, Y_train, max_depth=3)
+    # ----- ENTRENAMIENTO DEL MODELO -----
+    # Entrenar el arbol de decision usando el 80% de entrenamiento
+    tree = train_model(X_train, Y_train, max_depth=3)
 
-# ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE VALIDACIÓN -----
-# Predecir los resultados de valores de validación
-Y_val_pred = predict_value(tree, X_val)
-print("Puntuación de precisión en set de validación: ", 
-      accuracy_score(Y_val, Y_val_pred))
+    # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE VALIDACIÓN -----
+    # Predecir los resultados de valores de validación
+    Y_val_pred = predict_value(tree, X_val)
+    print("Puntuación de precisión en set de validación: ", 
+        accuracy_score(Y_val, Y_val_pred))
 
 # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE PRUEBA -----
 # Predecir los resultados de valores de prueba
 Y_test_pred = predict_value(tree, X_test)
 print("Puntuación de precisión en set de testing: ", 
-      accuracy_score(Y_test, Y_test_pred))
+    accuracy_score(Y_test, Y_test_pred))
