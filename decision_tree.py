@@ -240,33 +240,80 @@ def predict_value(tree, X):
 
     return predictions
 
+def apply_confusion_matrix(Y_test, Y_test_pred):
+    conf_matrix = confusion_matrix(Y_test, Y_test_pred)
+    print("Matriz de confusión:\n", conf_matrix)
+    print()
+
+    num_classes = np.unique(Y_test).size
+
+    precision_local = []
+    recall_local = []
+    f1_score_local = []
+    accuracy_local = []
+
+    for class_idx in range(num_classes):
+        TP = conf_matrix[class_idx, class_idx]
+        FP = np.sum(conf_matrix[:, class_idx]) - TP
+        FN = np.sum(conf_matrix[class_idx, :]) - TP
+        TN = np.sum(conf_matrix) - TP - FP - FN
+
+        precision = TP / (TP + FP) if TP + FP > 0 else 0
+        recall = TP / (TP + FN) if TP + FN > 0 else 0
+        f1_score = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
+        accuracy = (TP + TN) / (TP + TN + FP + FN)
+
+        precision_local.append(precision)
+        recall_local.append(recall)
+        f1_score_local.append(f1_score)
+        accuracy_local.append(accuracy)
+
+        # Validación individual de cada clase
+        """print(f"Metrics for Class {class_idx}:")
+        print("Precision:", precision)
+        print("Exhaustividad (Recall):", recall)
+        print("Puntuación F1-Score:", f1_score)
+        print("Exactitud (Accuracy):", accuracy)
+        print()"""
+
+    print("Métricas promedio:")
+    print("Precision promedio:", round(np.mean(precision_local), 2))
+    print("Exhaustividad (Recall) promedio:", round(np.mean(recall_local), 2))
+    print("Puntuación F1-Score promedio:", round(np.mean(f1_score_local), 2))
+    print("Exactitud (Accuracy) promedio:", round(np.mean(accuracy_local), 2))
+
 ############## SECCIÓN DE ENTRENAMIENTO Y PRUEBA DE MODELO ##############
 # ----- PREPARACIÓN DE DATOS -----
 # Importar librerias
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
+
 # Caracteristicas (X)
 characteristic_rows = data.iloc[:, :-1].values
 # Resultados esperados (Y)
 result_rows = data.iloc[:, -1].values.reshape(-1,1)
 
-for _ in range(10):
+# ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA -----
+# Dividir el dataset en 80% entrenamiento y 20% prueba
+X_train_full, X_test, Y_train_full, Y_test = train_test_split(
+    characteristic_rows, result_rows, test_size=0.2)
+
+for _ in range(1, 11):
     """ Debido a que el árbol de decisión es un algoritmo en donde no se 
-    modificar los hiperparámetros para ir mejorando el algoritmo, 
+    modifican los hiperparámetros para ir mejorando el algoritmo, 
     se ejecuta 10 veces para obtener una demostración que el algoritmo
     generaliza con distintas divisiones de los datos de prueba y validación.
     """
-    # ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA -----
-    # Dividir el dataset en 80% entrenamiento y 20% prueba
+
+    print(f"---------- Prueba de validación #{_} ---------------")
+    # Generar un número aleatorio entre 0 y 100
     rand_numb_btw_0_and_100 = np.random.randint(0, 100)
-    X_train_full, X_test, Y_train_full, Y_test = train_test_split(
-        characteristic_rows, result_rows, test_size=0.2, random_state=rand_numb_btw_0_and_100)
     print("Random state: ", rand_numb_btw_0_and_100)
 
     # ----- DIVISIÓN DEL 80% DE ENTRENAMIENTO EN ENTRENAMIENTO Y VALIDACIÓN -----
     # Dividir el 80% de entrenamiento en 80% entrenamiento y 20% validación
     X_train, X_val, Y_train, Y_val = train_test_split(
-        X_train_full, Y_train_full, test_size=0.2, random_state=42)
+        X_train_full, Y_train_full, test_size=0.2, random_state=rand_numb_btw_0_and_100)
 
     # ----- ENTRENAMIENTO DEL MODELO -----
     # Entrenar el arbol de decision usando el 80% de entrenamiento
@@ -275,11 +322,16 @@ for _ in range(10):
     # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE VALIDACIÓN -----
     # Predecir los resultados de valores de validación
     Y_val_pred = predict_value(tree, X_val)
-    print("Puntuación de precisión en set de validación: ", 
+    print("Precisión (sklearn): ", 
         accuracy_score(Y_val, Y_val_pred))
+
+    apply_confusion_matrix(Y_val, Y_val_pred)
+    print("")
 
 # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE PRUEBA -----
 # Predecir los resultados de valores de prueba
 Y_test_pred = predict_value(tree, X_test)
-print("Puntuación de precisión en set de testing: ", 
+print("---------- Prueba de testing ----------")
+print("Precisión (sklearn): ", 
     accuracy_score(Y_test, Y_test_pred))
+apply_confusion_matrix(Y_test, Y_test_pred)
