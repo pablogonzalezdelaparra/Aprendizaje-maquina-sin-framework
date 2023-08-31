@@ -8,6 +8,18 @@ Matrícula: A01745096
 Fecha: 28/08/2023
 
 # Descripción del repositorio
+
+
+> **NOTA IMPORTANTE**: De acuerdo con la retroalimentación de la primera versión de este archivo, se realizan varias modificaciones. Leer descripción ⬇️ 
+
+
+* Se agregó de un dataset adicional con el fin de mostrar la generalización del programa con diferentes datos. El segundo dataset denominado ```bill_authentication.csv``` es bastante extenso, por lo que toma un poco de tiempo en terminar de ejecutar las 10 pruebas con el set de validación. Tener paciencia.
+* Se agregó un <b>reporte de clasificación</b> a cada prueba de validación, el cual muestra la efectividad del algoritmo de acuerdo en cada prueba, al igual que un resumen de sus factores de efectividad.
+* Se agregó una gráfica al final de ejecutar cada dataset la cual muestra los resultados de la precisión de cada prueba, al igual que el valor con el set de testing para realizar la comparación y muestra de generalización del algoritmo.
+* Se agregó tanto la fórmula como una gráfica de <b>matriz de confusión</b>, la cual permite observar los diversos parámetros de validación y calificación del desempeño del algoritmo.
+
+### Descripción
+
 De acuerdo con lo establecido en la actividad, el repositorio contiene el código fuente que implemente un algoritmo de aprendizaje máquina en Python sin utilizar ningún framework o librería dedicada para su funcionamiento.
 
 En este caso se decidió implementar el algoritmo denominado <b>árbol de decisión</b> (Decision Tree) de manera que clasifique la información de un dataset en específico.
@@ -52,4 +64,7 @@ Origen del dataset utilizado:
 
 https://www.kaggle.com/datasets/pablomgomez21/drugs-a-b-c-x-y-for-decision-trees
 
+### Decision tree classification
+
+https://www.kaggle.com/datasets/raghupalem/bill_authentication
 

@@ -3,10 +3,9 @@
 import numpy as np
 import pandas as pd
 
-# Cargar el dataset
-# Origen: https://www.kaggle.com/datasets/pablomgomez21/drugs-a-b-c-x-y-for-decision-trees
+# Cargar el número de datasets requeridos
 data = pd.read_csv("./dataset/drug200.csv")
-data.head()
+data_2 = pd.read_csv("./dataset/bill_authentication.csv")
 
 # Cambiar los valores de las columnas categoricas a numericas.
 # Esto se hace para que el algoritmo pueda trabajar con los datos categoricos 
@@ -240,98 +239,91 @@ def predict_value(tree, X):
 
     return predictions
 
-def apply_confusion_matrix(Y_test, Y_test_pred):
-    conf_matrix = confusion_matrix(Y_test, Y_test_pred)
-    print("Matriz de confusión:\n", conf_matrix)
-    print()
-
-    num_classes = np.unique(Y_test).size
-
-    precision_local = []
-    recall_local = []
-    f1_score_local = []
-    accuracy_local = []
-
-    for class_idx in range(num_classes):
-        TP = conf_matrix[class_idx, class_idx]
-        FP = np.sum(conf_matrix[:, class_idx]) - TP
-        FN = np.sum(conf_matrix[class_idx, :]) - TP
-        TN = np.sum(conf_matrix) - TP - FP - FN
-
-        precision = TP / (TP + FP) if TP + FP > 0 else 0
-        recall = TP / (TP + FN) if TP + FN > 0 else 0
-        f1_score = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
-        accuracy = (TP + TN) / (TP + TN + FP + FN)
-
-        precision_local.append(precision)
-        recall_local.append(recall)
-        f1_score_local.append(f1_score)
-        accuracy_local.append(accuracy)
-
-        # Validación individual de cada clase
-        """print(f"Metrics for Class {class_idx}:")
-        print("Precision:", precision)
-        print("Exhaustividad (Recall):", recall)
-        print("Puntuación F1-Score:", f1_score)
-        print("Exactitud (Accuracy):", accuracy)
-        print()"""
-
-    print("Métricas promedio:")
-    print("Precision promedio:", round(np.mean(precision_local), 2))
-    print("Exhaustividad (Recall) promedio:", round(np.mean(recall_local), 2))
-    print("Puntuación F1-Score promedio:", round(np.mean(f1_score_local), 2))
-    print("Exactitud (Accuracy) promedio:", round(np.mean(accuracy_local), 2))
-
 ############## SECCIÓN DE ENTRENAMIENTO Y PRUEBA DE MODELO ##############
 # ----- PREPARACIÓN DE DATOS -----
 # Importar librerias
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Caracteristicas (X)
-characteristic_rows = data.iloc[:, :-1].values
-# Resultados esperados (Y)
-result_rows = data.iloc[:, -1].values.reshape(-1,1)
+# Definir los datasets a utilizar
+datasets = [data, data_2]
+count = 0
+precisions = []
+y_val_list = []
+y_val_pred_list = []
 
-# ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA -----
-# Dividir el dataset en 80% entrenamiento y 20% prueba
-X_train_full, X_test, Y_train_full, Y_test = train_test_split(
-    characteristic_rows, result_rows, test_size=0.2)
+# TODO: Cambiar a dos datasets
+for dataset in datasets:
+    count += 1
+    # Caracteristicas (X) Dataset 1
+    characteristic_rows = dataset.iloc[:, :-1].values
+    # Resultados esperados (Y)
+    result_rows = dataset.iloc[:, -1].values.reshape(-1,1)
 
-for _ in range(1, 11):
-    """ Debido a que el árbol de decisión es un algoritmo en donde no se 
-    modifican los hiperparámetros para ir mejorando el algoritmo, 
-    se ejecuta 10 veces para obtener una demostración que el algoritmo
-    generaliza con distintas divisiones de los datos de prueba y validación.
-    """
+    # ----- DIVISIÓN INICIAL EN ENTRENAMIENTO Y PRUEBA DATASET 1 -----
+    # Dividir el dataset en 80% entrenamiento y 20% prueba
+    X_train_full, X_test, Y_train_full, Y_test = train_test_split(
+        characteristic_rows, result_rows, test_size=0.2)
 
-    print(f"---------- Prueba de validación #{_} ---------------")
-    # Generar un número aleatorio entre 0 y 100
-    rand_numb_btw_0_and_100 = np.random.randint(0, 100)
-    print("Random state: ", rand_numb_btw_0_and_100)
+    for _ in range(1, 11):
+        """ Debido a que el árbol de decisión es un algoritmo en donde no se 
+        modifican los hiperparámetros para ir mejorando el algoritmo, 
+        se ejecuta 10 veces para obtener una demostración que el algoritmo
+        generaliza con distintas divisiones de los datos de prueba y validación.
+        """
 
-    # ----- DIVISIÓN DEL 80% DE ENTRENAMIENTO EN ENTRENAMIENTO Y VALIDACIÓN -----
-    # Dividir el 80% de entrenamiento en 80% entrenamiento y 20% validación
-    X_train, X_val, Y_train, Y_val = train_test_split(
-        X_train_full, Y_train_full, test_size=0.2, random_state=rand_numb_btw_0_and_100)
+        print(f"---------- Prueba de validación #{_} (Dataset {count}) ---------------")
+        # Generar un número aleatorio entre 0 y 100
+        rand_numb_btw_0_and_100 = np.random.randint(0, 100)
+        print("Random state: ", rand_numb_btw_0_and_100)
 
-    # ----- ENTRENAMIENTO DEL MODELO -----
-    # Entrenar el arbol de decision usando el 80% de entrenamiento
-    tree = train_model(X_train, Y_train, max_depth=3)
+        # ----- DIVISIÓN DEL 80% DE ENTRENAMIENTO EN ENTRENAMIENTO Y VALIDACIÓN -----
+        # Dividir el 80% de entrenamiento en 80% entrenamiento y 20% validación
+        X_train, X_val, Y_train, Y_val = train_test_split(
+            X_train_full, Y_train_full, test_size=0.2, random_state=rand_numb_btw_0_and_100)
 
-    # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE VALIDACIÓN -----
-    # Predecir los resultados de valores de validación
-    Y_val_pred = predict_value(tree, X_val)
-    print("Precisión (sklearn): ", 
-        accuracy_score(Y_val, Y_val_pred))
+        # ----- ENTRENAMIENTO DEL MODELO -----
+        # Entrenar el arbol de decision usando el 80% de entrenamiento
+        tree = train_model(X_train, Y_train, max_depth=3)
 
-    apply_confusion_matrix(Y_val, Y_val_pred)
-    print("")
+        # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE VALIDACIÓN -----
+        # Predecir los resultados de valores de validación
+        Y_val_pred = predict_value(tree, X_val)
+        precision = round(accuracy_score(Y_val, Y_val_pred), 2)
+        precisions.append(precision)
+        y_val_list.append(Y_val)
+        y_val_pred_list.append(Y_val_pred)
+        print("Precisión (sklearn): ", precision)
+        
+        # Se despliega el reporte de clasificación
+        print(classification_report(Y_val, Y_val_pred, zero_division=0.0))
 
-# ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE PRUEBA -----
-# Predecir los resultados de valores de prueba
-Y_test_pred = predict_value(tree, X_test)
-print("---------- Prueba de testing ----------")
-print("Precisión (sklearn): ", 
-    accuracy_score(Y_test, Y_test_pred))
-apply_confusion_matrix(Y_test, Y_test_pred)
+        # Imprimir la matriz de confusión
+        print(confusion_matrix(Y_val, Y_val_pred))
+        
+    # ----- PREDICCIÓN DEL MODELO EN LOS DATOS DE PRUEBA -----
+    # Predecir los resultados de valores de prueba
+    Y_test_pred = predict_value(tree, X_test)
+    print("---------- Prueba de testing ----------")
+    test_precision = round(accuracy_score(Y_test, Y_test_pred), 2)
+    print("Precisión (sklearn): ", test_precision)
+
+    # Se despliega la matriz de confusión al final de cada dataset
+    cm = confusion_matrix(Y_test, Y_test_pred)
+    sns.heatmap(cm, annot=True, fmt="d")
+    plt.show()
+    
+    # Graficar las precisiones de las pruebas de validación
+    x = np.arange(1, 11)
+    plt.plot(precisions)
+    # Graficar
+    plt.axhline(y=accuracy_score(Y_test, Y_test_pred), color='r', linestyle='-')
+    plt.text(0, accuracy_score(Y_test, Y_test_pred), f"Prueba de testing: {test_precision}")
+    plt.xlabel("Número de prueba")
+    plt.ylabel("Precisión")
+    plt.title(f"Dataset {count}")
+    plt.show()
+
+    precisions = []
